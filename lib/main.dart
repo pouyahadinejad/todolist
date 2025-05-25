@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todolist/data.dart';
 import 'package:todolist/edit.dart';
@@ -144,61 +145,85 @@ class MyHomePage extends StatelessWidget {
             Expanded(
               child: ValueListenableBuilder<Box<TaskEntity>>(
                 valueListenable: box.listenable(),
+
                 builder: (context, box, child) {
-                  return ListView.builder(
-                    padding: EdgeInsets.fromLTRB(16, 16, 16, 100),
-                    itemCount: box.values.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Today',
-                                  style: themeData.textTheme.headlineSmall!
-                                      .apply(fontSizeFactor: 0.9),
-                                ),
-                                Container(
-                                  width: 70,
-                                  height: 3,
-                                  margin: EdgeInsets.only(top: 4),
-                                  decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.circular(1.5),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            MaterialButton(
-                              color: Color(0xffEAEFF5),
-                              textColor: Color(0xffAFBED0),
-                              elevation: 0,
-                              onPressed: () {},
-                              child: Row(
+                  if (box.isNotEmpty) {
+                    return ListView.builder(
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, 100),
+                      itemCount: box.values.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Delete All'),
-                                  SizedBox(width: 4),
-                                  Icon(CupertinoIcons.delete_solid, size: 18),
+                                  Text(
+                                    'Today',
+                                    style: themeData.textTheme.headlineSmall!
+                                        .apply(fontSizeFactor: 0.9),
+                                  ),
+                                  Container(
+                                    width: 70,
+                                    height: 3,
+                                    margin: EdgeInsets.only(top: 4),
+                                    decoration: BoxDecoration(
+                                      color: primaryColor,
+                                      borderRadius: BorderRadius.circular(1.5),
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-                          ],
-                        );
-                      } else {
-                        final TaskEntity task = box.values.toList()[index - 1];
-                        return TaskItem(task: task);
-                      }
-                    },
-                  );
+                              MaterialButton(
+                                color: Color(0xffEAEFF5),
+                                textColor: Color(0xffAFBED0),
+                                elevation: 0,
+                                onPressed: () {
+                                  box.clear();
+                                },
+                                child: Row(
+                                  children: [
+                                    Text('Delete All'),
+                                    SizedBox(width: 4),
+                                    Icon(CupertinoIcons.delete_solid, size: 18),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        } else {
+                          final TaskEntity task =
+                              box.values.toList()[index - 1];
+                          return TaskItem(task: task);
+                        }
+                      },
+                    );
+                  } else {
+                    return EmptyState();
+                  }
                 },
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class EmptyState extends StatelessWidget {
+  const EmptyState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SvgPicture.asset('assets/empty_state.svg', width: 120),
+        SizedBox(height: 12),
+        Text('Your task list is empty'),
+      ],
     );
   }
 }
@@ -231,8 +256,16 @@ class _TaskItemState extends State<TaskItem> {
     return InkWell(
       onTap: () {
         setState(() {
-          widget.task.isCompleted = !widget.task.isCompleted;
+          // widget.task.isCompleted = !widget.task.isCompleted;
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => EditTaskScreen(task: widget.task),
+            ),
+          );
         });
+      },
+      onLongPress: () {
+        widget.task.delete();
       },
       child: Container(
         margin: EdgeInsets.only(top: 8),
@@ -247,7 +280,14 @@ class _TaskItemState extends State<TaskItem> {
         ),
         child: Row(
           children: [
-            MyCheckBox(value: widget.task.isCompleted),
+            MyCheckBox(
+              value: widget.task.isCompleted,
+              onTap: () {
+                setState(() {
+                  widget.task.isCompleted = !widget.task.isCompleted;
+                });
+              },
+            ),
             SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -283,28 +323,33 @@ class _TaskItemState extends State<TaskItem> {
 
 class MyCheckBox extends StatelessWidget {
   final bool value;
-  const MyCheckBox({super.key, required this.value});
+  final GestureTapCallback onTap;
+  const MyCheckBox({super.key, required this.value, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
-    return Container(
-      // padding: EdgeInsets.only(left: 16, right: 16),
-      width: 24,
-      height: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: !value ? Border.all(color: Color(0xffAFBED0), width: 2) : null,
-        color: value ? primaryColor : null,
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        // padding: EdgeInsets.only(left: 16, right: 16),
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border:
+              !value ? Border.all(color: Color(0xffAFBED0), width: 2) : null,
+          color: value ? primaryColor : null,
+        ),
+        child:
+            value
+                ? Icon(
+                  CupertinoIcons.check_mark,
+                  size: 16,
+                  color: themeData.colorScheme.onPrimary,
+                )
+                : null,
       ),
-      child:
-          value
-              ? Icon(
-                CupertinoIcons.check_mark,
-                size: 16,
-                color: themeData.colorScheme.onPrimary,
-              )
-              : null,
     );
   }
 }
