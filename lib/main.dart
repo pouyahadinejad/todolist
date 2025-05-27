@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todolist/data.dart';
 import 'package:todolist/edit.dart';
@@ -13,73 +14,74 @@ void main() async {
   Hive.registerAdapter(PriorityAdapter());
   await Hive.openBox<TaskEntity>(taskBoxName);
   SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(statusBarColor: primaryVariantColor),
+    const SystemUiOverlayStyle(statusBarColor: primaryVariantColor),
   );
   runApp(const MyApp());
 }
 
+const Color primaryColor = Color(0xff794CFF);
+const Color primaryVariantColor = Color(0xff5C0AFF);
+const secondaryTextColor = Color(0xffAFBED0);
+const normalPriority = Color(0xffF09819);
+const lowPriority = Color(0xff3BE1F1);
+const highPriority = primaryColor;
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final primaryTextColor = Color(0xff1D2830);
-    final secondaryTextColor = Color(0xffAFBED0);
-    const Color primaryColor = Color(0xff794CFF);
-    const Color primaryVariantColor = Color(0xff5C0AFF);
-    const normalPriority = Color(0xffF09819);
-    const lowPriority = Color(0xff3BE1F1);
-    const higtPriority = primaryColor;
+    const primaryTextColor = Color(0xff1D2830);
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        inputDecorationTheme: InputDecorationTheme(
+        // This is the theme of your application.
+        //
+        // Try running your application with "flutter run". You'll see the
+        // application has a blue toolbar. Then, without quitting the app, try
+        // changing the primarySwatch below to Colors.green and then invoke
+        // "hot reload" (press "r" in the console where you ran "flutter run",
+        // or simply save your changes to "hot reload" in a Flutter IDE).
+        // Notice that the counter didn't reset back to zero; the application
+        // is not restarted.
+        textTheme: GoogleFonts.poppinsTextTheme(
+          const TextTheme(
+            headlineSmall: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
           floatingLabelBehavior: FloatingLabelBehavior.never,
           labelStyle: TextStyle(color: secondaryTextColor),
-          iconColor: secondaryTextColor,
           border: InputBorder.none,
+          iconColor: secondaryTextColor,
         ),
-        colorScheme: ColorScheme.light(
+        colorScheme: const ColorScheme.light(
           primary: primaryColor,
-          onPrimary: Colors.white,
-          primaryContainer: primaryVariantColor,
+          onPrimaryFixed: primaryVariantColor,
           background: Color(0xffF3F5F8),
           onSurface: primaryTextColor,
+          onPrimary: Colors.white,
           onBackground: primaryTextColor,
           secondary: primaryColor,
-          onSecondary: primaryColor,
+          onSecondary: Colors.white,
         ),
       ),
-      home: MyHomePage(),
+      home: HomeScreen(),
     );
   }
 }
 
-const Color primaryColor = Color(0xff794CFF);
-const Color primaryVariantColor = Color(0xff5C0AFF);
-const normalPriority = Color(0xffF09819);
-const lowPriority = Color(0xff3BE1F1);
-const higtPriority = primaryColor;
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
+class HomeScreen extends StatelessWidget {
+  HomeScreen({Key? key}) : super(key: key);
   final TextEditingController controller = TextEditingController();
-
+  final ValueNotifier<String> searchKeywordNotifier = ValueNotifier('');
   @override
   Widget build(BuildContext context) {
     final box = Hive.box<TaskEntity>(taskBoxName);
     final themeData = Theme.of(context);
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // appBar: AppBar(title: Text('ToDoList')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.of(context).push(
@@ -89,11 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         },
         label: Row(
-          children: [
-            Text('Add New Task'),
-            SizedBox(width: 3),
-            Icon(CupertinoIcons.add),
-          ],
+          children: const [Text('Add New Task'), Icon(CupertinoIcons.add)],
         ),
       ),
       body: SafeArea(
@@ -105,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 gradient: LinearGradient(
                   colors: [
                     themeData.colorScheme.primary,
-                    themeData.colorScheme.primaryContainer,
+                    themeData.colorScheme.onPrimaryFixed,
                   ],
                 ),
               ),
@@ -118,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: [
                         Text(
                           'To Do List',
-                          style: themeData.textTheme.headlineMedium!.apply(
+                          style: themeData.textTheme.headlineSmall!.apply(
                             color: themeData.colorScheme.onPrimary,
                           ),
                         ),
@@ -128,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Container(
                       height: 38,
                       width: double.infinity,
@@ -136,17 +134,20 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderRadius: BorderRadius.circular(19),
                         color: themeData.colorScheme.onPrimary,
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.1)),
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 20,
+                          ),
                         ],
                       ),
                       child: TextField(
                         onChanged: (value) {
-                          setState(() {});
+                          searchKeywordNotifier.value = controller.text;
                         },
                         controller: controller,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           prefixIcon: Icon(CupertinoIcons.search),
-                          label: Text('Search Task ...'),
+                          label: Text('Search tasks...'),
                         ),
                       ),
                     ),
@@ -155,75 +156,88 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Expanded(
-              child: ValueListenableBuilder<Box<TaskEntity>>(
-                valueListenable: box.listenable(),
-
-                builder: (context, box, child) {
-                  final items;
-                  if (controller.text.isEmpty) {
-                    items = box.values.toList();
-                  } else {
-                    items =
-                        box.values
-                            .where(
-                              (task) => task.name.contains(controller.text),
-                            )
-                            .toList();
-                  }
-                  if (items.isNotEmpty) {
-                    return ListView.builder(
-                      padding: EdgeInsets.fromLTRB(16, 16, 16, 100),
-                      itemCount: items.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+              child: ValueListenableBuilder<String>(
+                valueListenable: searchKeywordNotifier,
+                builder: (context, value, child) {
+                  return ValueListenableBuilder<Box<TaskEntity>>(
+                    valueListenable: box.listenable(),
+                    builder: (context, box, child) {
+                      final List<TaskEntity> items;
+                      if (controller.text.isEmpty) {
+                        items = box.values.toList();
+                      } else {
+                        items =
+                            box.values
+                                .where(
+                                  (task) => task.name.contains(controller.text),
+                                )
+                                .toList();
+                      }
+                      if (items.isNotEmpty) {
+                        return ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                          itemCount: items.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              return Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    'Today',
-                                    style: themeData.textTheme.headlineSmall!
-                                        .apply(fontSizeFactor: 0.9),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Today',
+                                        style: themeData
+                                            .textTheme
+                                            .headlineSmall!
+                                            .apply(fontSizeFactor: 0.9),
+                                      ),
+                                      Container(
+                                        width: 70,
+                                        height: 3,
+                                        margin: const EdgeInsets.only(top: 4),
+                                        decoration: BoxDecoration(
+                                          color: primaryColor,
+                                          borderRadius: BorderRadius.circular(
+                                            1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Container(
-                                    width: 70,
-                                    height: 3,
-                                    margin: EdgeInsets.only(top: 4),
-                                    decoration: BoxDecoration(
-                                      color: primaryColor,
-                                      borderRadius: BorderRadius.circular(1.5),
+                                  MaterialButton(
+                                    color: const Color(0xffEAEFF5),
+                                    textColor: secondaryTextColor,
+                                    elevation: 0,
+                                    onPressed: () {
+                                      box.clear();
+                                    },
+                                    child: Row(
+                                      children: const [
+                                        Text('Delete All'),
+                                        SizedBox(width: 4),
+                                        Icon(
+                                          CupertinoIcons.delete_solid,
+                                          size: 18,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
-                              ),
-                              MaterialButton(
-                                color: Color(0xffEAEFF5),
-                                textColor: Color(0xffAFBED0),
-                                elevation: 0,
-                                onPressed: () {
-                                  box.clear();
-                                },
-                                child: Row(
-                                  children: [
-                                    Text('Delete All'),
-                                    SizedBox(width: 4),
-                                    Icon(CupertinoIcons.delete_solid, size: 18),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        } else {
-                          final TaskEntity task = items[index - 1];
-                          return TaskItem(task: task);
-                        }
-                      },
-                    );
-                  } else {
-                    return EmptyState();
-                  }
+                              );
+                            } else {
+                              final TaskEntity task = items[index - 1];
+                              return TaskItem(task: task);
+                            }
+                          },
+                        );
+                      } else {
+                        return const EmptyState();
+                      }
+                    },
+                  );
                 },
               ),
             ),
@@ -235,7 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key});
+  const EmptyState({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -243,16 +257,17 @@ class EmptyState extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SvgPicture.asset('assets/empty_state.svg', width: 120),
-        SizedBox(height: 12),
-        Text('Your task list is empty'),
+        const SizedBox(height: 12),
+        const Text('Your task list is empty'),
       ],
     );
   }
 }
 
 class TaskItem extends StatefulWidget {
-  static const double height = 84;
-  const TaskItem({super.key, required this.task});
+  static const double height = 74;
+  static const double borderRadius = 8;
+  const TaskItem({Key? key, required this.task}) : super(key: key);
 
   final TaskEntity task;
 
@@ -263,42 +278,37 @@ class TaskItem extends StatefulWidget {
 class _TaskItemState extends State<TaskItem> {
   @override
   Widget build(BuildContext context) {
-    ThemeData themeData = Theme.of(context);
-    final priorityColor;
+    final ThemeData themeData = Theme.of(context);
+    final Color priorityColor;
     switch (widget.task.priority) {
       case Priority.low:
         priorityColor = lowPriority;
-
+        break;
       case Priority.normal:
         priorityColor = normalPriority;
-
+        break;
       case Priority.high:
-        priorityColor = higtPriority;
+        priorityColor = highPriority;
+        break;
     }
     return InkWell(
       onTap: () {
-        setState(() {
-          // widget.task.isCompleted = !widget.task.isCompleted;
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => EditTaskScreen(task: widget.task),
-            ),
-          );
-        });
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => EditTaskScreen(task: widget.task),
+          ),
+        );
       },
       onLongPress: () {
         widget.task.delete();
       },
       child: Container(
-        margin: EdgeInsets.only(top: 8),
-        padding: EdgeInsets.only(left: 16),
         height: TaskItem.height,
+        margin: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.only(left: 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(TaskItem.borderRadius),
           color: themeData.colorScheme.surface,
-          boxShadow: [
-            BoxShadow(blurRadius: 20, color: Colors.black.withOpacity(0.2)),
-          ],
         ),
         child: Row(
           children: [
@@ -310,14 +320,13 @@ class _TaskItemState extends State<TaskItem> {
                 });
               },
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Text(
+                widget.task.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                widget.task.name,
                 style: TextStyle(
-                  fontSize: 24,
                   decoration:
                       widget.task.isCompleted
                           ? TextDecoration.lineThrough
@@ -325,14 +334,15 @@ class _TaskItemState extends State<TaskItem> {
                 ),
               ),
             ),
+            const SizedBox(width: 8),
             Container(
               width: 5,
               height: TaskItem.height,
               decoration: BoxDecoration(
                 color: priorityColor,
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(8),
-                  bottomRight: Radius.circular(8),
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(TaskItem.borderRadius),
+                  bottomRight: Radius.circular(TaskItem.borderRadius),
                 ),
               ),
             ),
@@ -346,7 +356,8 @@ class _TaskItemState extends State<TaskItem> {
 class MyCheckBox extends StatelessWidget {
   final bool value;
   final GestureTapCallback onTap;
-  const MyCheckBox({super.key, required this.value, required this.onTap});
+  const MyCheckBox({Key? key, required this.value, required this.onTap})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -354,13 +365,12 @@ class MyCheckBox extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        // padding: EdgeInsets.only(left: 16, right: 16),
         width: 24,
         height: 24,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border:
-              !value ? Border.all(color: Color(0xffAFBED0), width: 2) : null,
+              !value ? Border.all(color: secondaryTextColor, width: 2) : null,
           color: value ? primaryColor : null,
         ),
         child:
