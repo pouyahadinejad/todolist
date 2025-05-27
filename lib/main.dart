@@ -309,6 +309,9 @@ class _TaskItemState extends State<TaskItem> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(TaskItem.borderRadius),
           color: themeData.colorScheme.surface,
+          boxShadow: [
+            BoxShadow(blurRadius: 20, color: Colors.black.withOpacity(0.2)),
+          ],
         ),
         child: Row(
           children: [
