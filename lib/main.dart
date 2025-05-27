@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         inputDecorationTheme: InputDecorationTheme(
+          floatingLabelBehavior: FloatingLabelBehavior.never,
           labelStyle: TextStyle(color: secondaryTextColor),
           iconColor: secondaryTextColor,
           border: InputBorder.none,
@@ -62,8 +63,15 @@ const normalPriority = Color(0xffF09819);
 const lowPriority = Color(0xff3BE1F1);
 const higtPriority = primaryColor;
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class MyHomePage extends StatefulWidget {
+  MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +140,10 @@ class MyHomePage extends StatelessWidget {
                         ],
                       ),
                       child: TextField(
+                        onChanged: (value) {
+                          setState(() {});
+                        },
+                        controller: controller,
                         decoration: InputDecoration(
                           prefixIcon: Icon(CupertinoIcons.search),
                           label: Text('Search Task ...'),
@@ -147,10 +159,21 @@ class MyHomePage extends StatelessWidget {
                 valueListenable: box.listenable(),
 
                 builder: (context, box, child) {
-                  if (box.isNotEmpty) {
+                  final items;
+                  if (controller.text.isEmpty) {
+                    items = box.values.toList();
+                  } else {
+                    items =
+                        box.values
+                            .where(
+                              (task) => task.name.contains(controller.text),
+                            )
+                            .toList();
+                  }
+                  if (items.isNotEmpty) {
                     return ListView.builder(
                       padding: EdgeInsets.fromLTRB(16, 16, 16, 100),
-                      itemCount: box.values.length + 1,
+                      itemCount: items.length + 1,
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           return Row(
@@ -193,8 +216,7 @@ class MyHomePage extends StatelessWidget {
                             ],
                           );
                         } else {
-                          final TaskEntity task =
-                              box.values.toList()[index - 1];
+                          final TaskEntity task = items[index - 1];
                           return TaskItem(task: task);
                         }
                       },
