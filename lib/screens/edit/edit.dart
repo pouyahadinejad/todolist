@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:todolist/data.dart';
+import 'package:todolist/data/data.dart';
 import 'package:todolist/main.dart';
 
 class EditTaskScreen extends StatefulWidget {
