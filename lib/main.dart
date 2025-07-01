@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todolist/data.dart';
 import 'package:todolist/edit.dart';
+
 
 const taskBoxName = 'tasks';
 void main() async {
@@ -35,20 +35,38 @@ class MyApp extends StatelessWidget {
     const primaryTextColor = Color(0xff1D2830);
     return MaterialApp(
       title: 'Flutter Demo',
+      // theme: ThemeData(
+
+      //   textTheme: GoogleFonts.poppinsTextTheme(
+      //     const TextTheme(
+      //       headlineSmall: TextStyle(fontWeight: FontWeight.bold),
+      //     ),
+      //   ),
+      //   inputDecorationTheme: const InputDecorationTheme(
+      //     floatingLabelBehavior: FloatingLabelBehavior.never,
+      //     labelStyle: TextStyle(color: secondaryTextColor),
+      //     border: InputBorder.none,
+      //     iconColor: secondaryTextColor,
+      //   ),
+      //   colorScheme: const ColorScheme.light(
+      //     primary: primaryColor,
+      //     onPrimaryFixed: primaryVariantColor,
+      //     background: Color(0xffF3F5F8),
+      //     onSurface: primaryTextColor,
+      //     onPrimary: Colors.white,
+      //     onBackground: primaryTextColor,
+      //     secondary: primaryColor,
+      //     onSecondary: Colors.white,
+      //   ),
+      // ),
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        textTheme: GoogleFonts.poppinsTextTheme(
-          const TextTheme(
-            headlineSmall: TextStyle(fontWeight: FontWeight.bold),
+        textTheme: const TextTheme(
+          headlineSmall: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Color(0xff1D2830),
           ),
+          bodyMedium: TextStyle(fontSize: 14),
         ),
         inputDecorationTheme: const InputDecorationTheme(
           floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -67,6 +85,7 @@ class MyApp extends StatelessWidget {
           onSecondary: Colors.white,
         ),
       ),
+
       home: HomeScreen(),
     );
   }
